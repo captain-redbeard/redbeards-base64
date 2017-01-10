@@ -1,2 +1,2 @@
-# php-base64
+# redbeard-base64
 Base64 implementation.
