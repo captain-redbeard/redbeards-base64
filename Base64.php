@@ -73,39 +73,25 @@ class Base64
         $characterCount = (($dataLength - 1) / 3 + 1) << 2;
         $dLength = $characterCount + ($split ? $characterCount - 1 / 76 << 1 : 0);
         $b = 0;
-        $cc = 0;
+        $c = 0;
         $baseData = [];
         
         //Encode data
         for ($d = 0; $d < $evenLength;) {
-            $c = $d + 1;
             $bits = (ord($data[$d++]) & 0xff) << 16;
-            
-            if ($c + 1 <= $dataLength) {
-                $bits |= (ord($data[$d++]) & 0xff) << 8;
-            }
-            
-            if ($c + 2 <= $dataLength) {
-                $bits |= (ord($data[$d++]) & 0xff);
-            }
+            $bits |= (ord($data[$d++]) & 0xff) << 8;
+            $bits |= (ord($data[$d++]) & 0xff);
             
             $baseData[$b++] = $pad[self::zeroFill($bits, 18) & 0x3f];
             $baseData[$b++] = $pad[self::zeroFill($bits, 12) & 0x3f];
-            
-            if ($c + 1 <= $dataLength) {
-                $baseData[$b++] = $pad[self::zeroFill($bits, 6) & 0x3f];
-            }
-            
-            if ($c + 2 <= $dataLength) {
-                $baseData[$b++] = $pad[$bits & 0x3f];
-            }
+            $baseData[$b++] = $pad[self::zeroFill($bits, 6) & 0x3f];
+            $baseData[$b++] = $pad[$bits & 0x3f];
             
             //Line split
-            if ($split && $cc++ == 19 && $d < $dLength - 2) {
-                echo "Here??";
+            if ($split && $c++ == 19 && $d < $dLength - 2) {
                 $baseData[$b++] = ord("\r");
                 $baseData[$b++] = ord("\n");
-                $cc = 0;
+                $c = 0;
             }
         }
         
@@ -114,7 +100,7 @@ class Base64
         if ($left > 0) {
             $bits = (ord($data[$evenLength]) & 0xff) << 10;
             $bits |= $left == 2 ? (ord($data[$dataLength - 1]) & 0xff) << 2 : 0;
-
+            
             //Set last four characters
             $baseData[$characterCount - 4] = $pad[$bits >> 12];
             $baseData[$characterCount - 3] = $pad[self::zeroFill($bits, 6) & 0x3f];
