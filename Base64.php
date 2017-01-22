@@ -1,10 +1,9 @@
 <?php
 /**
  * Base64 implementation based on MiGBase64.
- * Note: Line separation has been removed.
  *
- * Made data: 09/01/17
- * Author: captain-redbeard
+ * @author captain-redbeard
+ * @since 09/01/17
  */
 namespace Redbeard;
 
@@ -58,7 +57,7 @@ class Base64
 
     public static function encode($data)
     {
-        return self::encodeRaw($data, self::SAFE_PAD);
+        return self::encodeRaw($data, self::SAFE_PAD, true);
     }
     
     public static function decode($data)
@@ -66,17 +65,19 @@ class Base64
         return self::decodeRaw($data, self::SAFE_DECODE_PAD);
     }
     
-    public static function encodeRaw($data, $pad)
+    public static function encodeRaw($data, $pad, $split)
     {
         $dataLength = strlen($data);
         $data = str_split($data, 1);
         $evenLength = floor($dataLength / 3) * 3;
         $characterCount = (($dataLength - 1) / 3 + 1) << 2;
+        $dLength = $characterCount + ($split ? $characterCount - 1 / 76 << 1 : 0);
         $b = 0;
+        $cc = 0;
         $baseData = [];
         
         //Encode data
-        for ($d = 0; $d < $dataLength;) {
+        for ($d = 0; $d < $evenLength;) {
             $c = $d + 1;
             $bits = (ord($data[$d++]) & 0xff) << 16;
             
@@ -97,6 +98,14 @@ class Base64
             
             if ($c + 2 <= $dataLength) {
                 $baseData[$b++] = $pad[$bits & 0x3f];
+            }
+            
+            //Line split
+            if ($split && $cc++ == 19 && $d < $dLength - 2) {
+                echo "Here??";
+                $baseData[$b++] = ord("\r");
+                $baseData[$b++] = ord("\n");
+                $cc = 0;
             }
         }
         
