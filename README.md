@@ -1,2 +1,2 @@
-# redbeard-base64
+# redbeards-base64
 Base64 implementation.
